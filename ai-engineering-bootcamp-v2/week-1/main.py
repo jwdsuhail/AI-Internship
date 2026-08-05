@@ -51,6 +51,7 @@ class AskResponse(BaseModel):
     model: str
     latency_ms: int
     cost_usd: float
+    attempts: int  
 
 
 def compute_cost_usd(model: str, prompt_tokens: int, completion_tokens: int) -> float:
@@ -147,6 +148,7 @@ def ask(body: AskRequest) -> AskResponse:
                 model=model,
                 latency_ms=latency_ms,
                 cost_usd=round(cost_usd, 6),
+                attempts=attempt + 1,
             )
         except (ValidationError, ValueError) as exc:
             last_error = str(exc)
