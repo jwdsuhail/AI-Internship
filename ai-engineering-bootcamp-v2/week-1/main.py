@@ -36,15 +36,23 @@ EMBEDDING_MODEL = "text-embedding-3-small"
 EMBEDDING_DIM = 1536  # Must match the Pinecone index dimension exactly.
 
 # Below this cosine score nothing retrieved is really about the question, so we refuse without
-# calling the model. Measured on this corpus: on-topic hits land ~0.55-0.70, noise lands ~0.00.
-MIN_RELEVANCE_SCORE = 0.25
+# calling the model. Measured on this corpus: on-topic hits land 0.38-0.70, noise lands 0.00-0.25.
+# Kept at 0.30 because marginal chunks in the prompt caused the model to misattribute citations
+# to them — excluding them is more effective than asking the model to ignore them.
+MIN_RELEVANCE_SCORE = 0.30
 
 REFUSAL_TEXT = "I don't have enough information to answer that."
 
 # The grounding contract: context-only, cite chunk IDs, refuse rather than guess.
-GROUNDING_PROMPT = """Answer using ONLY the context below.
-If the context does not contain the answer, reply with exactly: "{refusal}"
-Do not use outside knowledge. Cite the chunk IDs (shown in square brackets) that you used.
+# Each fact must carry the ID of the passage it came from, so a wrong citation is visible.
+GROUNDING_PROMPT = """Answer using ONLY the context passages below.
+Each passage begins with its chunk ID in square brackets.
+
+Rules:
+- If the context does not contain the answer, reply with exactly: "{refusal}"
+- Never use outside knowledge.
+- After each fact you state, cite the chunk ID of the passage that fact came from.
+- Only cite IDs that appear in the context, and only cite passages you actually used.
 
 Context:
 {context}
@@ -64,8 +72,10 @@ def get_index():
 
     global _pinecone_index
     if _pinecone_index is None:
-        api_key = os.environ.get("PINECONE_API_KEY")
-        index_name = os.environ.get("PINECONE_INDEX_NAME")
+        # strip(): pasting values into a hosting dashboard often drags in a trailing newline,
+        # which ends up inside the Pinecone host URL and fails with an opaque error.
+        api_key = os.environ.get("PINECONE_API_KEY", "").strip()
+        index_name = os.environ.get("PINECONE_INDEX_NAME", "").strip()
         if not api_key or not index_name:
             raise RuntimeError(
                 "PINECONE_API_KEY and PINECONE_INDEX_NAME must be set (locally in .env, "
