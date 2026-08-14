@@ -224,6 +224,11 @@ def ingest(body: IngestRequest) -> IngestResponse:
         ordered = sorted(stale, key=chunk_number)
         for offset in range(0, len(ordered), DELETE_BATCH_SIZE):
             index.delete(ids=ordered[offset : offset + DELETE_BATCH_SIZE])
+    except NotFoundException:
+        # Fresh or just-cleared index: the namespace does not exist, so there is nothing to
+        # clean up. The lookahead means we always issue this delete, including on a first
+        # ingest, so this has to be a no-op rather than a failure.
+        pass
     except Exception as exc:
         raise HTTPException(
             status_code=503,
