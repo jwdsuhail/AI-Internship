@@ -1,5 +1,6 @@
 fastapi[standard]
 httpx
 openai
+pinecone
 python-dotenv
 streamlit
