@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from openai import OpenAI
 from pinecone import Pinecone
+from pinecone.exceptions import NotFoundException
 from pydantic import BaseModel, Field, ValidationError
 
 # Load .env from this folder so the key is found regardless of shell working directory.
@@ -172,14 +173,19 @@ def ingest(body: IngestRequest) -> IngestResponse:
 
     index = get_index()
 
-    # Re-ingesting a document_id should replace it, not stack duplicates alongside it.
-    # IDs are deterministic ("handbook#0"), so we clear the old ones by prefix first.
+    # Re-ingesting a document_id REPLACES that document. Deterministic IDs are not enough:
+    # a shorter new version overwrites #0..#n but orphans every higher-numbered old chunk.
+    # Deleting by metadata filter clears the document whatever its previous length, and
+    # failures are raised rather than swallowed — a silent skip is how stale chunks pile up.
     try:
-        stale = [vector_id for page in index.list(prefix=f"{body.document_id}#") for vector_id in page]
-        if stale:
-            index.delete(ids=stale)
-    except Exception:
-        pass  # Prefix listing is best-effort; deterministic IDs still overwrite in place.
+        index.delete(filter={"document_id": {"$eq": body.document_id}})
+    except NotFoundException:
+        pass  # Empty index: the namespace does not exist yet, so there is nothing to clear.
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Could not clear existing chunks for '{body.document_id}': {exc}",
+        )
 
     # Embed and upsert in batches — one call per chunk would be slow and needlessly expensive.
     batch_size = 100
@@ -450,6 +456,12 @@ def ask(body: AskRequest) -> AskResponse:
 
             # The model can still refuse even when retrieval cleared the floor — report that.
             refused = REFUSAL_TEXT.lower().rstrip(".") in answer.answer.lower()
+
+            # confidence describes how confident the ANSWER is. Left to the model, a refusal
+            # comes back at ~1.0 ("I am certain I cannot answer"), which contradicts the
+            # score-floor refusal path that reports 0.0. Force it so both paths agree.
+            if refused:
+                answer = answer.model_copy(update={"confidence": 0.0, "sources_needed": True})
 
             # Cite what the answer actually used, not everything we retrieved. The prompt asks
             # the model to inline chunk IDs, so parse those back out; if it cited nothing,
