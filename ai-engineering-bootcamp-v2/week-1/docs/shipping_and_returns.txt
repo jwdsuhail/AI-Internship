@@ -1,0 +1,22 @@
+Acme Corp Shipping and Returns
+
+PROCESSING TIME
+Orders placed before 14:00 local time on a business day are processed the same day. Orders placed after that, or on a weekend or public holiday, are processed the next business day. Processing means picked, packed, and handed to the carrier; it does not include transit time.
+
+DOMESTIC SHIPPING
+Standard domestic shipping takes 3 to 5 business days and costs 6.99 USD. Express shipping takes 1 to 2 business days and costs 19.99 USD. Orders over 75 USD qualify for free standard shipping. All domestic orders ship from the Seattle warehouse.
+
+TRACKING
+A tracking number is emailed once the carrier scans the package, usually within 12 hours of dispatch. Tracking information can take up to 24 hours to appear on the carrier website. Customers who have not received tracking within 2 business days of the shipping confirmation should contact support.
+
+LOST AND DAMAGED PACKAGES
+A package is considered lost if tracking shows no movement for 7 consecutive business days. Lost packages are replaced at no cost once a claim is filed. Damaged items must be reported within 48 hours of delivery with photographs of the packaging and the item. Do not discard the original packaging until the claim is resolved.
+
+RETURNS
+Unopened items may be returned within 30 days of delivery for a full refund. Opened items may be returned within 30 days but are subject to a 15 percent restocking fee. Return shipping is paid by the customer unless the item arrived damaged or the wrong item was sent. Custom or personalized items cannot be returned.
+
+EXCHANGES
+Exchanges are processed as a return plus a new order. The replacement ships once the returned item is scanned by the carrier, not when it arrives at the warehouse. Exchanges for a different product are only permitted if the price difference is under 50 USD.
+
+ADDRESS CHANGES
+Shipping addresses can be changed only before the order is processed. Once a tracking number is issued the address cannot be modified; the customer must refuse delivery and wait for the package to return to the warehouse before reordering.

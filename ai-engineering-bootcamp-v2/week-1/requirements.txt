@@ -1,6 +1,9 @@
-fastapi[standard]
-httpx
-openai
-pinecone
-python-dotenv
-streamlit
+# Pinned so Render's fresh build resolves the same versions that work locally.
+# pinecone in particular is version-sensitive here: ingest iterates index.list() pages as
+# ListItem objects, which older majors returned as plain ID strings.
+fastapi[standard]==0.141.1
+httpx==0.28.1
+openai==2.52.0
+pinecone==9.1.0
+python-dotenv==1.2.2
+streamlit==1.60.0

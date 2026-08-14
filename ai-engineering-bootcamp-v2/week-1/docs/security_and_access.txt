@@ -1,0 +1,22 @@
+Acme Corp Security and Access Policy
+
+ACCOUNT CREDENTIALS
+All employee accounts require multi-factor authentication. Hardware security keys are mandatory for anyone with production access; authenticator apps are acceptable for everyone else. SMS codes are not permitted as a second factor. Passwords must be at least 14 characters and are checked against a breached-password list at creation time. Password rotation is not required on a schedule; rotation is triggered only by a suspected compromise.
+
+PRODUCTION ACCESS
+Production database access requires an approved access request that names a specific reason and an expiry date. The maximum duration for a single grant is 7 days. Standing production access is limited to the on-call rotation and the platform team. All production queries are logged and retained for 400 days.
+
+DEVICE MANAGEMENT
+Company laptops must have full-disk encryption enabled and the endpoint agent installed. Personal devices may access email and chat but not source code or customer data. A lost or stolen device must be reported within 1 hour so it can be remotely wiped. Devices that miss security updates for more than 14 days are automatically blocked from internal services.
+
+THIRD PARTY SOFTWARE
+New third-party tools that process customer data require a security review before purchase. The review takes 5 to 10 business days and covers data handling, subprocessors, and breach history. Free tools are not exempt. Browser extensions with access to page content are prohibited on work devices.
+
+INCIDENT RESPONSE
+Suspected security incidents are reported to the security channel immediately, not to a manager first. The on-call security engineer acknowledges within 30 minutes at any hour. Severity 1 incidents, meaning confirmed unauthorized access to customer data, trigger the executive notification path within 2 hours. A written postmortem is required within 5 business days of resolution.
+
+ACCESS REVIEWS
+Access to all systems is reviewed quarterly. Managers confirm each report's access list; anything unconfirmed within 10 business days is revoked automatically. Departing employees have all access revoked within 1 hour of their final day ending.
+
+VULNERABILITY DISCLOSURE
+External researchers may report vulnerabilities to the published security address. Acknowledgement is sent within 3 business days. Critical findings are patched within 7 days, high within 30 days, and medium within 90 days.

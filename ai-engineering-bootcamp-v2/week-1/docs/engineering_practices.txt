@@ -1,0 +1,25 @@
+Acme Corp Engineering Practices
+
+CODE REVIEW
+Every change to production code requires at least one approving review. Changes touching authentication, billing, or data deletion require two approvals, one of which must come from the owning team. Reviews are expected within 1 business day; anything waiting longer than 2 days is escalated in the team channel. Authors may not approve their own pull requests, including trivial ones.
+
+BRANCHING AND RELEASES
+Work happens on short-lived branches cut from main. Branches older than 5 business days must be rebased before merge. Releases go out continuously; there is no fixed release train. Any engineer may deploy during business hours. Deploys after 16:00 local time on a Friday require an explicit reason posted in the release channel.
+
+TESTING
+New logic requires unit tests. Changes to an API contract require an integration test covering the new shape. Test coverage is not enforced as a percentage gate; reviewers judge whether the tests exercise the risk. A failing test on main blocks all deploys until fixed or reverted.
+
+INCIDENTS AND ROLLBACK
+Rollback is always the first option during an incident, before debugging forward. Any engineer may roll back a deploy without approval. Incidents are declared generously; a false alarm costs far less than a delayed response. A blameless postmortem is written for anything customer-visible lasting more than 5 minutes.
+
+ON CALL
+On-call rotations run 1 week, handing over on Wednesday mornings. Primary on-call acknowledges pages within 5 minutes during business hours and 15 minutes overnight. Secondary is paged if primary does not acknowledge. Being paged overnight earns time off in lieu the following day.
+
+TECHNICAL DEBT
+Each team reserves 20 percent of sprint capacity for maintenance and debt reduction. This is not carried over or traded away for feature work without a director conversation.
+
+DOCUMENTATION
+Any service with an on-call rotation must have a runbook covering common alerts and their first response. Runbooks are reviewed at the start of each on-call handover, and stale steps are fixed by the outgoing on-call.
+
+DEPENDENCIES
+New third-party libraries require a note in the pull request explaining why a dependency beats writing it. Dependencies with fewer than 2 maintainers need team lead sign-off.

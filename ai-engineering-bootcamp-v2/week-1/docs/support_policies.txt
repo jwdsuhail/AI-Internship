@@ -1,0 +1,22 @@
+Acme Corp Customer Support Policies
+
+REFUNDS
+Customers may request a full refund within 30 days of purchase, no reason required. Refunds are processed to the original payment method within 5 business days of approval. Between 31 and 90 days, customers may request store credit instead of a cash refund. After 90 days no refund or credit is available except where required by local law.
+
+WARRANTY
+Hardware carries a 2 year limited warranty covering manufacturing defects. The warranty does not cover accidental damage, liquid damage, or damage caused by unauthorized repair. Warranty claims require the original order number. Replacement units ship within 7 business days of claim approval and carry the remainder of the original warranty period, not a new one.
+
+TICKET PRIORITY AND RESPONSE TIMES
+Tickets are assigned one of four priorities. P1 (service down for multiple customers) has a 1 hour first-response target. P2 (major feature broken) has a 4 hour target. P3 (minor issue with a workaround) has a 1 business day target. P4 (question or feature request) has a 3 business day target. Response targets apply during support hours only.
+
+SUPPORT HOURS
+Standard support operates Monday to Friday, 08:00 to 20:00 UTC. P1 tickets are handled 24/7 including weekends and public holidays. Customers on the Basic plan receive email support only; Pro and Enterprise plans include live chat.
+
+ESCALATION
+Tier 1 agents must escalate to Tier 2 if a ticket remains unresolved after 24 hours or if the customer explicitly requests escalation. Tier 2 escalates to engineering if a code change is required. Any ticket touching data loss or a security concern is escalated to engineering immediately, regardless of tier or age.
+
+ACCOUNT CANCELLATION
+Customers may cancel at any time from account settings. Cancellation takes effect at the end of the current billing period; service continues until then. Annual plans cancelled within the first 14 days receive a prorated refund. Account data is retained for 60 days after cancellation, then permanently deleted.
+
+COMPENSATION FOR OUTAGES
+If monthly uptime falls below 99.5 percent, Enterprise customers receive a 10 percent service credit. Below 99.0 percent, the credit is 25 percent. Credits must be requested within 30 days of the affected month and are applied to the next invoice.

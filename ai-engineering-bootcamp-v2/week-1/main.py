@@ -36,6 +36,14 @@ MODEL_PRICES_PER_1K: dict[str, tuple[float, float]] = {
 EMBEDDING_MODEL = "text-embedding-3-small"
 EMBEDDING_DIM = 1536  # Must match the Pinecone index dimension exactly.
 
+# Pinecone caps how many IDs a single delete request may carry.
+DELETE_BATCH_SIZE = 1000
+
+# index.list() is eventually consistent, so a re-ingest landing shortly after the previous one
+# can come back short and leave orphaned chunks behind when a document shrinks. Sweeping a fixed
+# range past the new tail covers that gap without depending on the listing being fresh.
+ORPHAN_LOOKAHEAD = 50
+
 # Below this cosine score nothing retrieved is really about the question, so we refuse without
 # calling the model. Measured on this corpus: on-topic hits land 0.38-0.70, noise lands 0.00-0.25.
 # Kept at 0.30 because marginal chunks in the prompt caused the model to misattribute citations
@@ -117,17 +125,23 @@ def chunk_text(text: str, chunk_size: int = 800, chunk_overlap: int = 100) -> li
             break
 
         # Back off to the last clean boundary in this window; fall through to a hard cut.
+        # The boundary must leave at least half a window behind it. A separator sitting near the
+        # start — a heading above one long unbroken paragraph, say — would otherwise cut a sliver,
+        # and the overlap would rewind almost to where we began, emitting one tiny chunk per
+        # character instead of moving through the text.
+        min_cut = start + chunk_size // 2
         cut = -1
         for separator in separators:
             found = text.rfind(separator, start, end)
-            if found > start:
+            if found > min_cut:
                 cut = found + len(separator)
                 break
         if cut == -1:
             cut = end
 
         chunks.append(text[start:cut].strip())
-        start = max(cut - chunk_overlap, start + 1)  # max() guards against a zero-width step.
+        # Same reasoning for the overlap: never rewind past the midpoint, or progress stalls.
+        start = max(cut - chunk_overlap, start + chunk_size // 2)
 
     return [chunk for chunk in chunks if chunk]
 
@@ -160,10 +174,17 @@ def ingest(body: IngestRequest) -> IngestResponse:
       -d '{"text": "Remote work: up to 3 days per week.", "document_id": "handbook"}'
     """
 
+    document_id = body.document_id.strip()
+
     if not body.text.strip():
         raise HTTPException(status_code=400, detail="text must not be empty")
-    if not body.document_id.strip():
+    if not document_id:
         raise HTTPException(status_code=400, detail="document_id must not be empty")
+    if "#" in document_id:
+        # '#' separates the document from the chunk number inside a vector ID, so allowing it
+        # in the ID makes prefixes ambiguous: ingesting "policy" would list — and delete stale
+        # chunks from — an unrelated "policy#v2" document.
+        raise HTTPException(status_code=400, detail="document_id must not contain '#'")
     if body.chunk_overlap >= body.chunk_size:
         raise HTTPException(status_code=400, detail="chunk_overlap must be smaller than chunk_size")
 
@@ -171,44 +192,79 @@ def ingest(body: IngestRequest) -> IngestResponse:
     if not chunks:
         raise HTTPException(status_code=400, detail="text produced no chunks after cleaning")
 
-    index = get_index()
-
-    # Re-ingesting a document_id REPLACES that document. Deterministic IDs are not enough:
-    # a shorter new version overwrites #0..#n but orphans every higher-numbered old chunk.
-    # Deleting by metadata filter clears the document whatever its previous length, and
-    # failures are raised rather than swallowed — a silent skip is how stale chunks pile up.
     try:
-        index.delete(filter={"document_id": {"$eq": body.document_id}})
+        index = get_index()
+    except RuntimeError as exc:  # Missing config reads better as a 503 than an unhandled 500.
+        raise HTTPException(status_code=503, detail=str(exc))
+
+    try:
+        existing = [item.id for page in index.list(prefix=f"{document_id}#") for item in page]
     except NotFoundException:
-        pass  # Empty index: the namespace does not exist yet, so there is nothing to clear.
+        existing = []  # Empty index: the namespace does not exist yet.
     except Exception as exc:
         raise HTTPException(
             status_code=503,
-            detail=f"Could not clear existing chunks for '{body.document_id}': {exc}",
+            detail=f"Could not list existing chunks for '{document_id}': {exc}",
+        )
+
+    def chunk_number(vector_id: str) -> int:
+        """Trailing '#<n>' of a chunk ID, or -1 for anything that does not parse."""
+
+        suffix = vector_id.rsplit("#", 1)[-1]
+        return int(suffix) if suffix.isdigit() else -1
+
+    # Every ID deleted here is at or past the new tail, so it is disjoint from everything we are
+    # about to upsert (0..len(chunks)-1). That disjointness is what makes this safe: Pinecone
+    # applies deletes asynchronously, and one landing after the upsert must not touch new data.
+    # Deleting by metadata filter instead would match the new chunks too and silently wipe them.
+    stale = {vid for vid in existing if chunk_number(vid) >= len(chunks)}
+    stale |= {f"{document_id}#{n}" for n in range(len(chunks), len(chunks) + ORPHAN_LOOKAHEAD)}
+
+    try:
+        ordered = sorted(stale, key=chunk_number)
+        for offset in range(0, len(ordered), DELETE_BATCH_SIZE):
+            index.delete(ids=ordered[offset : offset + DELETE_BATCH_SIZE])
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Could not remove stale chunks for '{document_id}': {exc}",
         )
 
     # Embed and upsert in batches — one call per chunk would be slow and needlessly expensive.
     batch_size = 100
+    indexed = 0
     for offset in range(0, len(chunks), batch_size):
         batch = chunks[offset : offset + batch_size]
-        vectors = [
-            {
-                "id": f"{body.document_id}#{offset + i}",
-                "values": embedding,
-                "metadata": {
-                    "document_id": body.document_id,
-                    "chunk_index": offset + i,
-                    "source": body.source or body.document_id,
-                    "text": chunk,  # Stored so retrieval can return text without a second lookup.
-                },
-            }
-            for i, (chunk, embedding) in enumerate(zip(batch, embed_texts(batch)))
-        ]
-        index.upsert(vectors=vectors)
+        try:
+            vectors = [
+                {
+                    "id": f"{document_id}#{offset + i}",
+                    "values": embedding,
+                    "metadata": {
+                        "document_id": document_id,
+                        "chunk_index": offset + i,
+                        "source": body.source or document_id,
+                        "text": chunk,  # Stored so retrieval returns text without a second lookup.
+                    },
+                }
+                for i, (chunk, embedding) in enumerate(zip(batch, embed_texts(batch)))
+            ]
+            index.upsert(vectors=vectors)
+        except Exception as exc:
+            # Report how far we got: the document is now partially indexed, so the caller needs
+            # to know a re-run is required rather than assume nothing landed.
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    f"Indexing failed for '{document_id}' after {indexed} of "
+                    f"{len(chunks)} chunks: {exc}"
+                ),
+            )
+        indexed += len(batch)
 
     return IngestResponse(
-        document_id=body.document_id,
-        chunks_indexed=len(chunks),
+        document_id=document_id,
+        chunks_indexed=indexed,
         status="indexed",
     )
 

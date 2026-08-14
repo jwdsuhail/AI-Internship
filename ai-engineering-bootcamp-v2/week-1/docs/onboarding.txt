@@ -1,0 +1,25 @@
+Acme Corp New Hire Onboarding
+
+BEFORE DAY ONE
+IT ships a preconfigured laptop to arrive 3 business days before the start date. The new hire receives a welcome email with account setup instructions 1 business day before starting. Managers must submit the access request form at least 5 business days ahead so accounts exist on day one.
+
+WEEK ONE
+Day one is orientation: account setup, security training, and a team introduction. Day two through five are shadowing sessions with an assigned onboarding buddy. Every new hire is assigned a buddy from a different team to widen their internal network. No production access is granted during week one under any circumstances.
+
+THE FIRST PULL REQUEST
+Engineering hires are expected to ship a small production change within their first 10 business days. The change is intentionally low-risk; the goal is exercising the full path from local development through review, CI, and deploy. The onboarding buddy reviews it first.
+
+TRAINING REQUIREMENTS
+Security awareness training must be completed within 5 business days of joining. Data handling training is required within 15 business days for anyone touching customer data. Both are repeated annually. Incomplete training past the deadline suspends production access until resolved.
+
+THE 30-60-90 PLAN
+Managers write a 30-60-90 day plan before the start date and review it with the new hire on day two. The 30 day mark focuses on environment fluency, 60 on independent delivery of scoped work, and 90 on owning a component. A formal check-in happens at each mark.
+
+PROBATION
+The probation period is 90 days. Confirmation is not automatic; managers submit a written recommendation at day 75 so there is time to act on concerns. Probation may be extended once by 30 days with HR approval.
+
+BUDDY PROGRAM
+Buddies commit 2 hours per week for the first month. Being a buddy is voluntary and is counted as an engineering contribution during performance reviews. Buddies are not the new hire's manager and do not participate in probation decisions.
+
+EQUIPMENT AND WORKSPACE
+New hires choose between two laptop configurations at offer acceptance. The home office stipend becomes available on day one and does not need to wait for probation to end.
