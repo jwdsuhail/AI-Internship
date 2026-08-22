@@ -1,0 +1,7 @@
+# Pinned to what was verified working locally on Python 3.12.
+# google-adk needs Python 3.12+ — a 3.10/3.11 venv will fail to install or import.
+google-adk==2.7.1
+google-genai==2.19.0
+httpx==0.28.1
+python-dotenv==1.2.3
+streamlit==1.62.0

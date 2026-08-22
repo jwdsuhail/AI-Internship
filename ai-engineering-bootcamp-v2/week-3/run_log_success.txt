@@ -1,0 +1,16 @@
+
+======================================================================
+QUESTION: What is the refund window?
+DOCS SERVICE: http://127.0.0.1:8000
+======================================================================
+
+THINK   -> I should search for: 'refund window refund policy'
+ACT     -> search_docs({'query': 'refund window refund policy'})
+OBSERVE -> usable_chunks=5 top_score=0.4422 searches_left=2 chunks=[support_policies#3, support_policies#0, shipping_and_returns#2, billing_and_plans#3, billing_and_plans#1]
+
+----------------------------------------------------------------------
+FINAL ANSWER:
+Customers can request a full refund within 30 days of purchase, with no reason required [support_policies#0]. Between 31 and 90 days after purchase, customers may request store credit instead of a cash refund [support_policies#0]. After 90 days, no refund or credit is available unless required by local law [support_policies#0].
+
+For physical items, both unopened and opened items can be returned within 30 days of delivery for a refund, though opened items are subject to a 15 percent restocking fee [shipping_and_returns#2]. Unopened items receive a full refund [shipping_and_returns#2].
+----------------------------------------------------------------------

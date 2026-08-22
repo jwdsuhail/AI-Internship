@@ -1,0 +1,22 @@
+
+======================================================================
+QUESTION: What is the parental leave policy?
+DOCS SERVICE: http://127.0.0.1:8000
+======================================================================
+
+THINK   -> I should search for: 'parental leave policy'
+ACT     -> search_docs({'query': 'parental leave policy'})
+OBSERVE -> usable_chunks=5 top_score=0.5113 chunks=[employee_handbook#1, handbook_smoke#0, employee_handbook#2, employee_handbook#0, onboarding#2]
+
+THINK   -> I should search for: 'maternity paternity parental family leave'
+ACT     -> search_docs({'query': 'maternity paternity parental family leave'})
+OBSERVE -> usable_chunks=5 top_score=0.4516 chunks=[employee_handbook#1, onboarding#3, handbook_smoke#0, employee_handbook#2, onboarding#2]
+
+THINK   -> I should search for: 'primary caregiver secondary caregiver birth adoption child'
+ACT     -> search_docs({'query': 'primary caregiver secondary caregiver birth adoption child'})
+OBSERVE -> usable_chunks=0 top_score=0.2018 chunks=[none]
+
+----------------------------------------------------------------------
+FINAL ANSWER:
+I don't have enough information to answer that.
+----------------------------------------------------------------------

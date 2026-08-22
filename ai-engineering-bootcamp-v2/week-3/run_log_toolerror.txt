@@ -1,0 +1,14 @@
+
+======================================================================
+QUESTION: What is the refund window and what happens after 90 days?
+DOCS SERVICE: http://127.0.0.1:8000
+======================================================================
+
+THINK   -> I should search for: 'refund window policy 90 days'
+ACT     -> search_docs({'query': 'refund window policy 90 days'})
+OBSERVE -> ERROR: Cannot reach the docs service at http://127.0.0.1:8000 (ConnectError). The FastAPI service is probably not running. Do not retry this tool; tell the user the documentation service is unavailable.
+
+----------------------------------------------------------------------
+FINAL ANSWER:
+The documentation service is currently unavailable. Please try again later.
+----------------------------------------------------------------------
